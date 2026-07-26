@@ -1,4 +1,9 @@
+import { useSelector } from "react-redux";
+
 function Navbar() {
+  const user = useSelector((state) => state.user);
+  const profileImage = user?.profileImage;
+
   return (
     <div className="navbar bg-base-200 shadow-sm">
       <div className="flex-1">
@@ -11,12 +16,20 @@ function Navbar() {
             role="button"
             className="btn btn-ghost btn-circle avatar"
           >
-            <div className="w-10 rounded-full">
-              <img
-                alt="Tailwind CSS Navbar component"
-                src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-              />
-            </div>
+            {user &&
+              (profileImage ? (
+                <div className="w-10 rounded-full">
+                  <img alt="Tailwind CSS Navbar component" src={profileImage} />
+                </div>
+              ) : (
+                <div className="avatar avatar-placeholder">
+                  <div className="bg-neutral text-neutral-content w-8 rounded-full">
+                    <span className="text-xs">
+                      {user.firstName.charAt(0) + user.lastName.charAt(0)}
+                    </span>
+                  </div>
+                </div>
+              ))}
           </div>
           <ul
             tabIndex="-1"
