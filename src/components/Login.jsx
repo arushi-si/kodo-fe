@@ -1,101 +1,67 @@
 import { useState } from "react";
-import axios from "axios";
-import { addUser } from "../utils/userSlice";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { BASE_URL } from "../utils/constant";
+import { Link } from "react-router-dom";
+import api, { getErrorMessage } from "../utils/api";
+import { addUser } from "../utils/userSlice";
 
 function Login() {
-  const [email, setEmail] = useState("ms@gmail.com");
-  const [password, setPassword] = useState("msdhoni123?");
+  const [emailId, setEmailId] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError(null);
+    setSubmitting(true);
     try {
-      const response = await axios.post(
-        `${BASE_URL}/login`,
-        { emailId: email, password },
-        { withCredentials: true },
-      );
-      console.log(response);
-      dispatch(addUser(response.data));
-      navigate("/feed");
-    } catch (error) {
-      error.response.data && setError(error.response.data.error);
-      console.error(error);
+      const res = await api.post("/login", { emailId, password });
+      dispatch(addUser(res.data)); // PublicOnly redirects to /feed
+    } catch (err) {
+      setError(getErrorMessage(err));
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="flex items-center mt-6 justify-center">
-      <div className="card card-border  bg-base-100 w-96">
-        <div className="card-body">
+    <div className="flex items-center mt-6 justify-center px-4">
+      <form className="card card-border bg-base-100 w-96" onSubmit={handleLogin}>
+        <div className="card-body gap-3">
           <h2 className="card-title">Login</h2>
-
-          <label className="input validator">
-            <svg
-              className="h-[1em] opacity-50"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-            >
-              <g
-                strokeLinejoin="round"
-                strokeLinecap="round"
-                strokeWidth="2.5"
-                fill="none"
-                stroke="currentColor"
-              >
-                <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
-              </g>
-            </svg>
+          <label className="input w-full">
+            <span className="label">Email</span>
             <input
               type="email"
               placeholder="mail@site.com"
+              autoComplete="email"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={emailId}
+              onChange={(e) => setEmailId(e.target.value)}
             />
           </label>
-          <div className="validator-hint hidden">Enter valid email address</div>
-          <label className="input validator">
-            <svg
-              className="h-[1em] opacity-50"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-            >
-              <g
-                strokeLinejoin="round"
-                strokeLinecap="round"
-                strokeWidth="2.5"
-                fill="none"
-                stroke="currentColor"
-              >
-                <path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"></path>
-                <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
-              </g>
-            </svg>
+          <label className="input w-full">
+            <span className="label">Password</span>
             <input
               type="password"
+              autoComplete="current-password"
               required
-              placeholder="Password"
-              title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
-          <p className="text-error">{error}</p>
-
-          <div className="card-actions justify-end">
-            <button className="btn btn-primary" onClick={handleLogin}>
+          {error && <p className="text-error text-sm">{error}</p>}
+          <div className="card-actions justify-between items-center">
+            <Link to="/signup" className="link link-hover text-sm">
+              New here? Create an account
+            </Link>
+            <button type="submit" className="btn btn-primary" disabled={submitting}>
+              {submitting && <span className="loading loading-spinner loading-sm" />}
               Login
             </button>
           </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
