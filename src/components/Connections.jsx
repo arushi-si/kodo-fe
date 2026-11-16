@@ -68,6 +68,9 @@ function Connections() {
                 </Link>
                 {user.headline && <div className="text-sm opacity-70 truncate">{user.headline}</div>}
               </div>
+              <Link to={`/chat/${user._id}`} className="btn btn-sm btn-primary">
+                Message
+              </Link>
               <div className="dropdown dropdown-end">
                 <button tabIndex={0} className="btn btn-sm btn-ghost" aria-label="More actions">
                   ⋯

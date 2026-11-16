@@ -3,8 +3,9 @@ import { Link, NavLink } from "react-router-dom";
 import Avatar from "./Avatar";
 import useLogout from "../hooks/useLogout";
 import { APP_NAME } from "../utils/constant";
+import { selectUnreadTotal } from "../utils/chatSlice";
 
-function NavItems({ receivedCount }) {
+function NavItems({ receivedCount, unreadTotal }) {
   const linkClass = ({ isActive }) => (isActive ? "menu-active" : "");
   return (
     <>
@@ -24,6 +25,12 @@ function NavItems({ receivedCount }) {
           Connections
         </NavLink>
       </li>
+      <li>
+        <NavLink to="/chats" className={linkClass}>
+          Chats
+          {unreadTotal > 0 && <span className="badge badge-sm badge-primary">{unreadTotal}</span>}
+        </NavLink>
+      </li>
     </>
   );
 }
@@ -31,6 +38,7 @@ function NavItems({ receivedCount }) {
 function Navbar() {
   const user = useSelector((state) => state.user);
   const receivedCount = useSelector((state) => state.requests.received.length);
+  const unreadTotal = useSelector(selectUnreadTotal);
   const logOut = useLogout();
 
   return (
@@ -43,18 +51,23 @@ function Navbar() {
       {user && (
         <div className="flex gap-2 items-center">
           <ul className="menu menu-horizontal px-1 hidden md:flex">
-            <NavItems receivedCount={receivedCount} />
+            <NavItems receivedCount={receivedCount} unreadTotal={unreadTotal} />
           </ul>
           <div className="dropdown dropdown-end">
             <div tabIndex={0} role="button" className="btn btn-ghost btn-circle" aria-label="Account menu">
-              <Avatar user={user} size="xs" />
+              <div className="indicator">
+                {receivedCount + unreadTotal > 0 && (
+                  <span className="indicator-item status status-primary md:hidden" aria-label="New activity" />
+                )}
+                <Avatar user={user} size="xs" />
+              </div>
             </div>
             <ul
               tabIndex="-1"
               className="menu menu-sm dropdown-content bg-base-100 rounded-box z-50 mt-3 w-52 p-2 shadow"
             >
               <div className="md:hidden">
-                <NavItems receivedCount={receivedCount} />
+                <NavItems receivedCount={receivedCount} unreadTotal={unreadTotal} />
                 <li className="menu-title" />
               </div>
               <li>

@@ -21,3 +21,14 @@ export const isHttpUrl = (val) => {
     return false;
   }
 };
+
+// "14:05" today, "Mon" this week, otherwise "12 Nov"
+export const formatTime = (date) => {
+  if (!date) return "";
+  const d = new Date(date);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString())
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  if (now - d < 6 * 24 * 60 * 60 * 1000) return d.toLocaleDateString([], { weekday: "short" });
+  return d.toLocaleDateString([], { day: "numeric", month: "short" });
+};

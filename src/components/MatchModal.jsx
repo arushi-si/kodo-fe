@@ -18,8 +18,8 @@ function MatchModal({ user, onClose }) {
           <button className="btn" onClick={onClose} autoFocus>
             Keep swiping
           </button>
-          <Link to="/connections" className="btn btn-primary" onClick={onClose}>
-            View connections
+          <Link to={`/chat/${user._id}`} className="btn btn-primary" onClick={onClose}>
+            Send a message
           </Link>
         </div>
       </div>

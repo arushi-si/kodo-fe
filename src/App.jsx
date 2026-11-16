@@ -13,6 +13,8 @@ import Settings from "./components/Settings";
 import Requests from "./components/Requests";
 import Connections from "./components/Connections";
 import PublicProfile from "./components/PublicProfile";
+import Chats from "./components/Chats";
+import Chat from "./components/Chat";
 
 function App() {
   return (
@@ -32,6 +34,8 @@ function App() {
               <Route path="requests" element={<Requests />} />
               <Route path="connections" element={<Connections />} />
               <Route path="user/:userId" element={<PublicProfile />} />
+              <Route path="chats" element={<Chats />} />
+              <Route path="chat/:userId" element={<Chat />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

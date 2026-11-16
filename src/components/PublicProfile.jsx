@@ -123,7 +123,9 @@ function PublicProfileView({ userId }) {
   } else if (conn.status === "accepted") {
     buttons = (
       <>
-        <span className="badge badge-success">Connected</span>
+        <Link to={`/chat/${profile._id}`} className="btn btn-sm btn-primary">
+          Message
+        </Link>
         <button className="btn btn-sm btn-outline" disabled={busy} onClick={unmatch}>
           Unmatch
         </button>

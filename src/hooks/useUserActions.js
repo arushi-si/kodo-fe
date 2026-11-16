@@ -5,6 +5,7 @@ import { removeUserFromFeed } from "../utils/feedSlice";
 import { addConnection, removeConnection } from "../utils/connectionsSlice";
 import { removeReceived, removeRequestsWithUser, removeSentTo } from "../utils/requestsSlice";
 import { showToast } from "../utils/toastSlice";
+import { removeInboxUser } from "../utils/chatSlice";
 
 // Every relationship action in one place, so every screen updates the store the same way.
 // Each action resolves to a result (or true) on success and null on failure (a toast is shown).
@@ -76,6 +77,7 @@ export default function useUserActions() {
       try {
         await api.delete(`/request/connection/${userId}`);
         dispatch(removeConnection(userId));
+        dispatch(removeInboxUser(userId));
         dispatch(showToast("info", "Unmatched"));
         return true;
       } catch (err) {
@@ -92,6 +94,7 @@ export default function useUserActions() {
         dispatch(removeUserFromFeed(userId));
         dispatch(removeConnection(userId));
         dispatch(removeRequestsWithUser(userId));
+        dispatch(removeInboxUser(userId));
         dispatch(showToast("info", "User blocked"));
         return true;
       } catch (err) {
