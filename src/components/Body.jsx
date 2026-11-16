@@ -1,38 +1,33 @@
-import { Outlet, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Outlet } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import axios from "axios";
-import { BASE_URL } from "../utils/constant";
-import { useDispatch, useSelector } from "react-redux";
+import Toast from "./Toast";
+import Loader from "./Loader";
+import api from "../utils/api";
 import { addUser } from "../utils/userSlice";
-import { useEffect } from "react";
 
+// App shell: restores the session from the cookie once, then renders the routes.
 function Body() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const userData = useSelector((state) => state.user);
-  const fetchUser = async () => {
-    if (userData) return;
-    try {
-      const response = await axios.get(`${BASE_URL}/profile`, {
-        withCredentials: true,
-      });
-      dispatch(addUser(response.data));
-    } catch (error) {
-      navigate("/login");
-      console.error(error);
-    }
-  };
+  const user = useSelector((state) => state.user);
+  const [sessionChecked, setSessionChecked] = useState(Boolean(user));
 
   useEffect(() => {
-    if (!userData) fetchUser();
-  }, []);
+    if (sessionChecked) return;
+    api
+      .get("/profile")
+      .then((res) => dispatch(addUser(res.data)))
+      .catch(() => {}) // not logged in: RequireAuth will send the user to /login
+      .finally(() => setSessionChecked(true));
+  }, [dispatch, sessionChecked]);
 
   return (
-    <section>
+    <section className="min-h-screen flex flex-col">
       <Navbar />
-      {/* outlet renders child routes defined in a parent route */}
-      <Outlet />
+      <Toast />
+      <main className="flex-1 pb-24">{sessionChecked ? <Outlet /> : <Loader />}</main>
       <Footer />
     </section>
   );
