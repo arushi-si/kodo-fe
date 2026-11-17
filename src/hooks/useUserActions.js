@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { useDispatch } from "react-redux";
 import api, { getErrorMessage, getStatus } from "../utils/api";
-import { removeUserFromFeed } from "../utils/feedSlice";
+import { prependFeed, removeUserFromFeed } from "../utils/feedSlice";
 import { addConnection, removeConnection } from "../utils/connectionsSlice";
 import { removeReceived, removeRequestsWithUser, removeSentTo } from "../utils/requestsSlice";
 import { showToast } from "../utils/toastSlice";
@@ -117,8 +117,41 @@ export default function useUserActions() {
     [dispatch, fail],
   );
 
+  // Rewind my most recent swipe (a pass, or a like that hasn't been answered).
+  // Resolves to the restored user (already back on top of the feed), or null.
+  const undoLast = useCallback(async () => {
+    try {
+      const { data } = await api.post("/request/undo");
+      dispatch(prependFeed(data.user));
+      if (data.undoneStatus === "interested") dispatch(removeSentTo(data.user._id));
+      return data.user;
+    } catch (err) {
+      if (getStatus(err) === 404) {
+        dispatch(showToast("info", "Nothing to undo"));
+        return null;
+      }
+      return fail(err);
+    }
+  }, [dispatch, fail]);
+
+  // Undo my pass (or pending like) on a specific user, e.g. from the Passed list.
+  const restore = useCallback(
+    async (user) => {
+      try {
+        await api.delete(`/request/swipe/${user._id}`);
+        dispatch(prependFeed(user));
+        dispatch(removeSentTo(user._id));
+        dispatch(showToast("success", `${user.firstName} is back in Discover`));
+        return true;
+      } catch (err) {
+        return fail(err);
+      }
+    },
+    [dispatch, fail],
+  );
+
   return useMemo(
-    () => ({ swipe, review, withdraw, unmatch, block, unblock }),
-    [swipe, review, withdraw, unmatch, block, unblock],
+    () => ({ swipe, review, withdraw, unmatch, block, unblock, undoLast, restore }),
+    [swipe, review, withdraw, unmatch, block, unblock, undoLast, restore],
   );
 }
