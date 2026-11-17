@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://kodo-be.onrender.com/:path*" },
+    { "source": "/api/:path*", "destination": "https://kodo-be-cqf5.onrender.com/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
