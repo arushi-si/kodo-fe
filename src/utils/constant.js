@@ -1,7 +1,7 @@
 export const BASE_URL = "http://localhost:3000";
 
 // Product name lives here only, so the rename is a one-line change.
-export const APP_NAME = "DevTinder";
+export const APP_NAME = "Kodo";
 
 export const FEED_LIMIT = 10;
 export const MIN_FEED_CARDS = 3;
