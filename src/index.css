@@ -1,9 +1,182 @@
 @import "tailwindcss";
-@plugin "daisyui";
 
+/* Only our own theme: no built-in daisyUI themes. */
 @plugin "daisyui" {
-  themes:
-    light --default,
-    dark --prefersdark,
-    retro;
+  themes: false;
+}
+
+/* "After-hours": a code editor at 2am, crossed with a dating app. */
+@plugin "daisyui/theme" {
+  name: "kodo";
+  default: true;
+  prefersdark: true;
+  color-scheme: dark;
+
+  --color-base-100: #0e0b16;
+  --color-base-200: #171225;
+  --color-base-300: #221a35;
+  --color-base-content: #f4f1fa;
+
+  --color-primary: #ff3d7f;
+  --color-primary-content: #ffffff;
+  --color-secondary: #7c3aed;
+  --color-secondary-content: #ffffff;
+  --color-accent: #c6ff3d;
+  --color-accent-content: #0e0b16;
+  --color-neutral: #2a2140;
+  --color-neutral-content: #f4f1fa;
+
+  --color-info: #38bdf8;
+  --color-info-content: #0e0b16;
+  --color-success: #34d399;
+  --color-success-content: #0e0b16;
+  --color-warning: #fbbf24;
+  --color-warning-content: #0e0b16;
+  --color-error: #f43f5e;
+  --color-error-content: #ffffff;
+
+  --radius-selector: 2rem;
+  --radius-field: 1rem;
+  --radius-box: 1.5rem;
+  /* 0.275rem x 10 = 44px: buttons and inputs meet the minimum touch target */
+  --size-selector: 0.25rem;
+  --size-field: 0.275rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --color-muted: #a79dbf;
+  --color-brand-orange: #ff8a3d;
+}
+
+:root {
+  --brand-gradient: linear-gradient(135deg, #ff3d7f 0%, #ff8a3d 100%);
+  --mine-gradient: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+  --glow: 0 0 40px rgba(255, 61, 127, 0.35);
+  /* Height of the bottom tab bar, including the home-indicator area. */
+  --tabbar-h: calc(4rem + env(safe-area-inset-bottom));
+}
+
+@utility bg-brand {
+  background-image: var(--brand-gradient);
+}
+
+@utility bg-mine {
+  background-image: var(--mine-gradient);
+}
+
+@utility text-brand {
+  background-image: var(--brand-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+@utility shadow-glow {
+  box-shadow: var(--glow);
+}
+
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility pb-tabbar {
+  padding-bottom: var(--tabbar-h);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Primary call-to-action: brand gradient pill with the glow. */
+@utility btn-brand {
+  background-image: var(--brand-gradient);
+  color: #fff;
+  border: 0;
+  box-shadow: var(--glow);
+  &:disabled,
+  &[disabled] {
+    background-image: none;
+    box-shadow: none;
+  }
+}
+
+html,
+body {
+  background-color: var(--color-base-100);
+  color: var(--color-base-content);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+body {
+  font-family: var(--font-sans);
+  /* Desktop: the app is a centered column; fill the sides with a subtle glow. */
+  background-image:
+    radial-gradient(60rem 40rem at 0% 0%, rgb(124 58 237 / 0.16), transparent 60%),
+    radial-gradient(50rem 40rem at 100% 100%, rgb(255 61 127 / 0.12), transparent 60%);
+  background-attachment: fixed;
+}
+
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  /* At least 16px in form controls, so iOS Safari doesn't zoom on focus. */
+  input,
+  textarea,
+  select {
+    font-size: max(16px, 1em);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+/* Same rule for daisyUI's field wrappers; utilities (text-lg etc.) still win. */
+@layer components {
+  .input,
+  .textarea,
+  .select {
+    font-size: 16px;
+  }
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.btn {
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

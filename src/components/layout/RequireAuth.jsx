@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import api from "../utils/api";
-import { setReceived } from "../utils/requestsSlice";
-import { removeConnection } from "../utils/connectionsSlice";
-import { inboxMessage, removeInboxUser, setInbox } from "../utils/chatSlice";
-import { disconnectSocket, getSocket } from "../utils/socket";
+import api from "../../utils/api";
+import { setReceived } from "../../utils/requestsSlice";
+import { removeConnection } from "../../utils/connectionsSlice";
+import { inboxMessage, removeInboxUser, setInbox } from "../../utils/chatSlice";
+import { disconnectSocket, getSocket } from "../../utils/socket";
 
 const fetchInbox = () => api.get("/chats").then((res) => res.data);
 
@@ -53,6 +53,10 @@ function RequireAuth() {
   }, [dispatch, inboxStale]);
 
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  // Unfinished onboarding: back into the flow (it resumes where they left off).
+  const onOnboarding = location.pathname === "/onboarding";
+  if (!user.onboardingCompleted && !onOnboarding) return <Navigate to="/onboarding" replace />;
+  if (user.onboardingCompleted && onOnboarding) return <Navigate to="/feed" replace />;
   return <Outlet />;
 }
 

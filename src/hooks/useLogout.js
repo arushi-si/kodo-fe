@@ -15,6 +15,6 @@ export default function useLogout() {
       console.error(err);
     }
     dispatch(resetAll());
-    navigate("/login", { replace: true });
+    navigate("/", { replace: true });
   };
 }
