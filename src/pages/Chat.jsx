@@ -1,14 +1,18 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useParams } from "react-router-dom";
-import Avatar from "./Avatar";
-import Loader from "./Loader";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ChevronLeft, Ellipsis, SendHorizontal } from "lucide-react";
+import Avatar from "../components/ui/Avatar";
+import Loader from "../components/ui/Loader";
+import { ListSkeleton } from "../components/ui/Skeleton";
+import useUserActions from "../hooks/useUserActions";
+import useConfirm from "../hooks/useConfirm";
+import useMeta from "../hooks/useMeta";
 import api, { getErrorMessage, getStatus } from "../utils/api";
 import { emitWithAck, getSocket } from "../utils/socket";
 import { inboxMessage, markInboxRead, setActiveChat } from "../utils/chatSlice";
 import { showToast } from "../utils/toastSlice";
-import { LIMITS } from "../utils/constant";
-import { formatTime, fullName } from "../utils/helpers";
+import { formatTime } from "../utils/helpers";
 
 const PAGE_SIZE = 30;
 const TYPING_IDLE_MS = 1500;
@@ -43,6 +47,11 @@ function ChatView({ userId }) {
   const prevScrollHeight = useRef(0);
   const typingTimer = useRef(null);
   const amTyping = useRef(false);
+  const navigate = useNavigate();
+  const { unmatch, block } = useUserActions();
+  const [confirm, confirmModal] = useConfirm();
+  const { meta } = useMeta();
+  const messageMax = meta?.limits.messageMax ?? 2000;
 
   const markRead = useCallback(() => {
     if (document.visibilityState !== "visible") return;
@@ -174,92 +183,175 @@ function ChatView({ userId }) {
     dispatch(inboxMessage({ otherUserId: userId, message: res.message, incoming: false }));
   };
 
+  const onUnmatch = async () => {
+    const ok = await confirm({
+      title: `Unmatch ${other.firstName}?`,
+      message: "You'll be removed from each other's connections and this chat will close.",
+      confirmLabel: "Unmatch",
+      danger: true,
+    });
+    if (ok && (await unmatch(userId))) navigate("/chats", { replace: true });
+  };
+
+  const onBlock = async () => {
+    const ok = await confirm({
+      title: `Block ${other.firstName}?`,
+      message: "They won't be able to see you or message you. You can unblock them in Settings.",
+      confirmLabel: "Block",
+      danger: true,
+    });
+    if (ok && (await block(userId))) navigate("/chats", { replace: true });
+  };
+
+  const header = (
+    <header className="shrink-0 bg-base-100/90 backdrop-blur-md border-b border-white/5 pt-safe">
+      <div className="flex items-center gap-2 px-2 h-16">
+        <Link to="/chats" className="btn btn-ghost btn-circle" aria-label="Back to chats">
+          <ChevronLeft className="size-6" />
+        </Link>
+        {other && (
+          <>
+            <Link to={`/user/${other._id}`} className="flex items-center gap-3 min-w-0 flex-1">
+              <Avatar user={other} />
+              <div className="min-w-0">
+                <div className="font-semibold truncate">{other.firstName}</div>
+                <div className="text-xs h-4 truncate">
+                  {otherTyping && !closed ? (
+                    <span className="font-mono text-accent">typing…</span>
+                  ) : (
+                    <span className="text-muted">{other.headline}</span>
+                  )}
+                </div>
+              </div>
+            </Link>
+            <div className="dropdown dropdown-end">
+              <button tabIndex={0} className="btn btn-ghost btn-circle" aria-label="More actions">
+                <Ellipsis className="size-5" />
+              </button>
+              <ul tabIndex="-1" className="dropdown-content menu bg-base-300 rounded-2xl z-10 w-48 p-2 shadow-xl">
+                <li>
+                  <Link to={`/user/${other._id}`} className="h-11">View profile</Link>
+                </li>
+                {!closed && (
+                  <li>
+                    <button className="h-11" onClick={onUnmatch}>Unmatch</button>
+                  </li>
+                )}
+                <li>
+                  <button className="h-11 text-error" onClick={onBlock}>Block</button>
+                </li>
+              </ul>
+            </div>
+          </>
+        )}
+      </div>
+    </header>
+  );
+
   if (error) {
     return (
-      <div className="text-center py-16">
-        <p className="opacity-70">{error}</p>
-        <Link to="/chats" className="btn btn-sm mt-4">
-          Back to chats
-        </Link>
+      <div className="h-dvh flex flex-col">
+        {header}
+        <div className="text-center py-16 px-6">
+          <p className="text-muted">{error}</p>
+          <Link to="/chats" className="btn bg-neutral border-0 mt-4">
+            Back to chats
+          </Link>
+        </div>
       </div>
     );
   }
-  if (!other) return <Loader />;
 
   const lastMineIndex = messages.findLastIndex((m) => m.senderId === me._id);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-4 flex flex-col h-[calc(100dvh-10rem)]">
-      <div className="flex items-center gap-3 pb-3 border-b border-base-300">
-        <Link to="/chats" className="btn btn-ghost btn-sm" aria-label="Back to chats">
-          ←
-        </Link>
-        <Link to={`/user/${other._id}`} className="flex items-center gap-3">
-          <Avatar user={other} />
-          <div>
-            <div className="font-semibold">{fullName(other)}</div>
-            <div className="text-xs opacity-60 h-4">{otherTyping && !closed ? "typing…" : other.headline}</div>
-          </div>
-        </Link>
-      </div>
+    <div className="h-dvh flex flex-col">
+      {header}
 
       <div
         ref={listRef}
-        className="flex-1 overflow-y-auto py-4"
+        className="flex-1 overflow-y-auto overscroll-contain px-3 py-4"
         onScroll={(e) => e.currentTarget.scrollTop < 60 && loadOlder()}
       >
-        {loadingOlder && <Loader className="py-2" />}
-        {!hasMore && messages.length > 0 && (
-          <p className="text-center text-xs opacity-50 pb-2">Start of your conversation</p>
-        )}
-        {messages.length === 0 && (
-          <p className="text-center opacity-60 py-8">Say hi to {other.firstName} 👋</p>
-        )}
-        {messages.map((m, i) => {
-          const mine = m.senderId === me._id;
-          return (
-            <div key={m._id} className={`chat ${mine ? "chat-end" : "chat-start"}`}>
-              <div className={`chat-bubble whitespace-pre-wrap break-words ${mine ? "chat-bubble-primary" : ""}`}>
-                {m.text}
+        {!other ? (
+          <ListSkeleton rows={4} />
+        ) : (
+          <>
+            {loadingOlder && <Loader className="py-2" />}
+            {!hasMore && messages.length > 0 && (
+              <p className="text-center font-mono text-xs text-muted pb-3">{"// start of your conversation"}</p>
+            )}
+            {messages.length === 0 && (
+              <div className="flex flex-col items-center text-center gap-3 py-12">
+                <Avatar user={other} size="xl" ring />
+                <p className="font-display text-xl font-semibold">You matched with {other.firstName}</p>
+                <p className="text-muted text-sm max-w-60">
+                  Open with their prompt, their side project, or a hot take about tabs.
+                </p>
               </div>
-              <div className="chat-footer opacity-50 text-xs">
-                {formatTime(m.createdAt)}
-                {mine && i === lastMineIndex && m.readAt && " · Seen"}
-              </div>
-            </div>
-          );
-        })}
+            )}
+            {messages.map((m, i) => {
+              const mine = m.senderId === me._id;
+              return (
+                <div key={m._id} className={`chat ${mine ? "chat-end" : "chat-start"}`}>
+                  <div
+                    className={`chat-bubble before:hidden whitespace-pre-wrap break-words rounded-3xl text-[15px] ${
+                      mine ? "bg-mine text-white" : "bg-base-300 text-base-content"
+                    }`}
+                  >
+                    {m.text}
+                  </div>
+                  <div className="chat-footer text-muted text-[11px] mt-0.5">
+                    {formatTime(m.createdAt)}
+                    {mine && i === lastMineIndex && m.readAt && <span className="font-mono text-accent"> · seen</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </>
+        )}
       </div>
 
       {closed ? (
-        <div role="alert" className="alert">
+        <div role="alert" className="shrink-0 m-3 mb-[calc(0.75rem+env(safe-area-inset-bottom))] rounded-2xl bg-base-200 p-4 text-center text-muted">
           This conversation is no longer available.
         </div>
       ) : (
-        <form onSubmit={send} className="flex gap-2 items-end pt-2">
+        <form
+          onSubmit={send}
+          className="shrink-0 flex gap-2 items-end px-3 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))] border-t border-white/5 bg-base-100"
+        >
           <div className="flex-1">
             <textarea
-              className="textarea w-full min-h-0"
+              className="textarea w-full min-h-12 max-h-32 rounded-3xl bg-neutral border-0 px-4 py-3 leading-snug resize-none focus:outline-2 focus:outline-primary"
               rows={1}
-              placeholder="Type a message"
-              maxLength={LIMITS.messageMax}
+              placeholder={other ? `Message ${other.firstName}` : "Message"}
+              aria-label="Message"
+              maxLength={messageMax}
               value={draft}
+              disabled={!other}
               onChange={onDraftChange}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) send(e);
               }}
             />
-            {draft.length > LIMITS.messageMax - 200 && (
-              <p className="text-xs opacity-60 text-right">
-                {draft.length}/{LIMITS.messageMax}
+            {draft.length > messageMax - 200 && (
+              <p className="font-mono text-[11px] text-muted text-right pr-2">
+                {draft.length}/{messageMax}
               </p>
             )}
           </div>
-          <button type="submit" className="btn btn-primary" disabled={sending || !draft.trim()}>
-            Send
+          <button
+            type="submit"
+            className="btn btn-circle size-12 btn-brand"
+            aria-label="Send"
+            disabled={sending || !draft.trim()}
+          >
+            <SendHorizontal className="size-5" />
           </button>
         </form>
       )}
+      {confirmModal}
     </div>
   );
 }
