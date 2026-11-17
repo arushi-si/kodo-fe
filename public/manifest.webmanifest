@@ -1,0 +1,14 @@
+{
+  "name": "Kodo",
+  "short_name": "Kodo",
+  "description": "Swipe, match and ship together with developers who get you.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0E0B16",
+  "theme_color": "#0E0B16",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

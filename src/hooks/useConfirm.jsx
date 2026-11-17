@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import ConfirmModal from "../components/ConfirmModal";
+import ConfirmModal from "../components/ui/ConfirmModal";
 
 // const [confirm, confirmModal] = useConfirm();
 // if (await confirm({ title, message, confirmLabel, danger })) { ... }

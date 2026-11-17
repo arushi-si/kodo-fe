@@ -16,6 +16,11 @@ const feedSlice = createSlice({
       state.exhausted = fresh.length === 0;
       state.loaded = true;
     },
+    // Undo / restore: put a user back on top of the stack.
+    prependFeed: (state, action) => {
+      state.users = [action.payload, ...state.users.filter((u) => u._id !== action.payload._id)];
+      state.exhausted = false;
+    },
     removeUserFromFeed: (state, action) => {
       state.users = state.users.filter((u) => u._id !== action.payload);
     },
@@ -25,5 +30,5 @@ const feedSlice = createSlice({
   extraReducers: (builder) => builder.addCase(resetAll, () => initialState),
 });
 
-export const { appendFeed, removeUserFromFeed, setFeedSkills, removeFeed } = feedSlice.actions;
+export const { appendFeed, prependFeed, removeUserFromFeed, setFeedSkills, removeFeed } = feedSlice.actions;
 export default feedSlice.reducer;

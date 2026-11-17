@@ -32,3 +32,22 @@ export const formatTime = (date) => {
   if (now - d < 6 * 24 * 60 * 60 * 1000) return d.toLocaleDateString([], { weekday: "short" });
   return d.toLocaleDateString([], { day: "numeric", month: "short" });
 };
+
+export const capitalize = (s = "") => s.charAt(0).toUpperCase() + s.slice(1);
+
+// Display label for an option value from /meta (e.g. "others" -> "Other").
+export const optionLabel = (value) => (value === "others" ? "Other" : capitalize(value));
+
+// Photo URLs for a carousel: the uploaded photos, or the single (default) photoUrl.
+export const photoUrls = (user) => {
+  const urls = (user?.photos ?? []).map((p) => p.url).filter(Boolean);
+  if (urls.length) return urls;
+  return user?.photoUrl ? [user.photoUrl] : [];
+};
+
+// Skills both users list, compared case-insensitively.
+export const sharedSkills = (me, other) => {
+  if (!me || !other || me._id === other._id) return [];
+  const mine = new Set((me.skills ?? []).map((s) => s.toLowerCase()));
+  return (other.skills ?? []).filter((s) => mine.has(s.toLowerCase()));
+};

@@ -13,22 +13,15 @@ export const APP_NAME = "Kodo";
 
 export const FEED_LIMIT = 10;
 export const MIN_FEED_CARDS = 3;
-export const SWIPE_THRESHOLD = 120;
+export const SWIPE_THRESHOLD = 110;
+export const UNDO_TOAST_MS = 5000;
+// Client-side downscale before uploading to Cloudinary.
+export const PHOTO_MAX_DIMENSION = 2000;
 
-export const GENDERS = ["male", "female", "others"];
-export const EXPERIENCE_LEVELS = ["student", "junior", "mid", "senior", "lead"];
-
-export const LIMITS = {
-  firstNameMin: 2,
-  nameMax: 50,
-  ageMin: 18,
-  ageMax: 100,
-  aboutMax: 500,
-  skillsMax: 10,
-  skillMax: 30,
-  shortTextMax: 100,
-  messageMax: 2000,
-};
+// Option lists and most limits come from GET /meta (see utils/metaSlice.js).
+// These few aren't part of /meta; they mirror the User model (FRONTEND_HANDOFF.md §2).
+export const NAME_LIMITS = { firstNameMin: 2, nameMax: 50 };
+export const AGE_LIMITS = { min: 18, max: 100 };
 
 export const PASSWORD_RULES =
   "At least 8 characters with an uppercase letter, a lowercase letter, a number and a symbol.";
