@@ -3,6 +3,7 @@ import { Outlet } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { MotionConfig } from "framer-motion";
 import Toast from "../ui/Toast";
+import ServerStatus from "../ui/ServerStatus";
 import Logo from "../ui/Logo";
 import api from "../../utils/api";
 import { addUser } from "../../utils/userSlice";
@@ -27,6 +28,7 @@ function AppShell() {
     <MotionConfig reducedMotion="user">
       <div className="relative mx-auto w-full max-w-md min-h-dvh bg-base-100 md:border-x md:border-white/5 md:shadow-2xl overflow-x-clip">
         <Toast />
+        <ServerStatus />
         {sessionChecked ? (
           <Outlet />
         ) : (

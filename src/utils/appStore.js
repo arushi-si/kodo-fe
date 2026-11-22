@@ -6,6 +6,7 @@ import connectionsReducer from "./connectionsSlice";
 import toastReducer from "./toastSlice";
 import chatReducer from "./chatSlice";
 import metaReducer from "./metaSlice";
+import serverReducer from "./serverSlice";
 
 export const appStore = configureStore({
   reducer: {
@@ -16,5 +17,6 @@ export const appStore = configureStore({
     toast: toastReducer,
     chat: chatReducer,
     meta: metaReducer,
+    server: serverReducer,
   },
 });
